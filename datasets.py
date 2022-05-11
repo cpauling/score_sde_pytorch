@@ -173,7 +173,7 @@ def get_dataset(config, uniform_dequantization=False, evaluation=False):
 
       return dict(image=img, label=d.get('label', None))
 
-  def create_train_dataset(dataset_builder, split):
+  def create_dataset(dataset_builder, split, shuffle):
     dataset_options = tf.data.Options()
     dataset_options.experimental_optimization.map_parallelization = True
     dataset_options.experimental_threading.private_threadpool_size = 48
@@ -182,25 +182,7 @@ def get_dataset(config, uniform_dequantization=False, evaluation=False):
     if isinstance(dataset_builder, tfds.core.DatasetBuilder):
       dataset_builder.download_and_prepare()
       ds = dataset_builder.as_dataset(
-        split=split, shuffle_files=True, read_config=read_config)
-    else:
-      ds = dataset_builder.with_options(dataset_options)
-    ds = ds.repeat(count=num_epochs)
-    ds = ds.shuffle(shuffle_buffer_size)
-    ds = ds.map(preprocess_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    ds = ds.batch(batch_size, drop_remainder=True)
-    return ds.prefetch(prefetch_size)
-  
-    def create_eval_dataset(dataset_builder, split):
-    dataset_options = tf.data.Options()
-    dataset_options.experimental_optimization.map_parallelization = True
-    dataset_options.experimental_threading.private_threadpool_size = 48
-    dataset_options.experimental_threading.max_intra_op_parallelism = 1
-    read_config = tfds.ReadConfig(options=dataset_options)
-    if isinstance(dataset_builder, tfds.core.DatasetBuilder):
-      dataset_builder.download_and_prepare()
-      ds = dataset_builder.as_dataset(
-        split=split, shuffle_files=False, read_config=read_config)
+        split=split, shuffle_files=shuffle, read_config=read_config)
     else:
       ds = dataset_builder.with_options(dataset_options)
     ds = ds.repeat(count=num_epochs)
@@ -209,6 +191,6 @@ def get_dataset(config, uniform_dequantization=False, evaluation=False):
     ds = ds.batch(batch_size, drop_remainder=True)
     return ds.prefetch(prefetch_size)
 
-  train_ds = create_train_dataset(dataset_builder, train_split_name)
-  eval_ds = create_eval_dataset(dataset_builder, eval_split_name)
+  train_ds = create_dataset(dataset_builder, train_split_name, False)
+  eval_ds = create_dataset(dataset_builder, eval_split_name, True)
   return train_ds, eval_ds, dataset_builder
