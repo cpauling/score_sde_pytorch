@@ -191,6 +191,6 @@ def get_dataset(config, uniform_dequantization=False, evaluation=False):
     ds = ds.batch(batch_size, drop_remainder=True)
     return ds.prefetch(prefetch_size)
 
-  train_ds = create_dataset(dataset_builder, train_split_name, False)
-  eval_ds = create_dataset(dataset_builder, eval_split_name, True)
+  train_ds = create_dataset(dataset_builder, train_split_name, True)
+  eval_ds = create_dataset(dataset_builder, eval_split_name, False)
   return train_ds, eval_ds, dataset_builder
