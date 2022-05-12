@@ -350,7 +350,8 @@ def evaluate(config,
         # Force garbage collection before calling TensorFlow code for Inception network
         gc.collect()
         latents = evaluation.run_inception_distributed(samples, inception_model,
-                                                       inceptionv3=inceptionv3)
+                                                       inceptionv3=inceptionv3,
+                                                       num_batches=4)
         # Force garbage collection again before returning to JAX code
         gc.collect()
         # Save latent represents of the Inception network to disk or Google Cloud Storage
